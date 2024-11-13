@@ -1,3 +1,0 @@
-go: cannot find main module, but found .git/config in C:\Users\User\Desktop\book-exchange\backend
-	to create a module there, run:
-	go mod init
