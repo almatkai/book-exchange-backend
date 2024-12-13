@@ -10,6 +10,7 @@ import (
 	"github.com/almatkai/book-exchange-backend/internal/delivery/router/handlers" // Alias to `handlers`
 	"github.com/almatkai/book-exchange-backend/internal/repository"
 	"github.com/almatkai/book-exchange-backend/internal/usecase"
+	"github.com/almatkai/book-exchange-backend/pkg/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -18,10 +19,20 @@ func main() {
 	// Load config
 	cfg := config.LoadConfig()
 
+	utils.InitJWT(cfg.JWTSecret)
+
+	// Optionally, log if JWT secret is set correctly
+	if len(cfg.JWTSecret) == 0 {
+		log.Fatal("JWT_SECRET is not set in the environment")
+	} else {
+		log.Println("JWT Secret initialized successfully")
+	}
+
 	// Initialize database connection
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
 		cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
