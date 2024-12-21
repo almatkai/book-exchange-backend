@@ -2,20 +2,26 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/http"
-
 	"github.com/almatkai/book-exchange-backend/internal/config"
 	"github.com/almatkai/book-exchange-backend/internal/delivery/router"
-	"github.com/almatkai/book-exchange-backend/internal/delivery/router/handlers" // Alias to `handlers`
+	"github.com/almatkai/book-exchange-backend/internal/delivery/router/handlers"
 	"github.com/almatkai/book-exchange-backend/internal/repository"
 	"github.com/almatkai/book-exchange-backend/internal/usecase"
 	"github.com/almatkai/book-exchange-backend/pkg/utils"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"log"
+	"net/http"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load environment variables
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found. Relying on environment variables.")
+	}
+
 	// Load config
 	cfg := config.LoadConfig()
 
@@ -29,10 +35,9 @@ func main() {
 	}
 
 	// Initialize database connection
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort)
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require sslrootcert=%s",
+		cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBPort, cfg.DBSSLRootCert)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}

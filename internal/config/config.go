@@ -1,40 +1,35 @@
-// internal/config/config.go
 package config
 
 import (
-	"log"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	JWTSecret  string
-	ServerPort string
+	ServerPort    string
+	DBHost        string
+	DBUser        string
+	DBPassword    string
+	DBName        string
+	DBPort        string
+	DBSSLRootCert string
+	JWTSecret     string
 }
 
+// LoadConfig loads configuration from environment variables or defaults
 func LoadConfig() *Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("No .env file found")
-	}
-
 	return &Config{
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "5432"),
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBName:     getEnv("DB_NAME", "postgres"),
-		JWTSecret:  getEnv("JWT_SECRET", "secret"),
-		ServerPort: getEnv("SERVER_PORT", "3000"),
+		ServerPort:    getEnv("SERVER_PORT", "8080"),
+		DBHost:        getEnv("DB_HOST", "localhost"),
+		DBUser:        getEnv("DB_USER", "postgres"),
+		DBPassword:    getEnv("DB_PASSWORD", ""),
+		DBName:        getEnv("DB_NAME", "book_exchange"),
+		DBPort:        getEnv("DB_PORT", "5432"),
+		DBSSLRootCert: getEnv("DB_SSL_ROOT_CERT", "ca.pem"), // Path to SSL certificate
+		JWTSecret:     getEnv("JWT_SECRET", ""),
 	}
 }
 
+// getEnv retrieves environment variables with a fallback default value
 func getEnv(key, fallback string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
