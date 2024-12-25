@@ -1,3 +1,38 @@
-tmp/
+# Go binary files
+/bin/
+/obj/
+
+# Go workspace files
+*.swp
+
+# Dependency directories
+vendor/
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test output
+*.test
+*.out
+
+# IDE files (e.g., VSCode, JetBrains)
+.vscode/
+.idea/
+
+# Go module files
+go.sum
+go.mod
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Environment variable file
 .env
-.idea

@@ -18,7 +18,7 @@ type Config struct {
 // LoadConfig loads configuration from environment variables or defaults
 func LoadConfig() *Config {
 	return &Config{
-		ServerPort:    getEnv("SERVER_PORT", "8080"),
+		ServerPort:    getEnv("SERVER_PORT", "3000"),
 		DBHost:        getEnv("DB_HOST", "localhost"),
 		DBUser:        getEnv("DB_USER", "postgres"),
 		DBPassword:    getEnv("DB_PASSWORD", ""),
