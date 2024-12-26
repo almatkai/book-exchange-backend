@@ -1,55 +1,65 @@
+// pkg/utils/jwt.go
 package utils
 
 import (
-	"errors"
-	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
 )
 
-var jwtSecret []byte // Will be set during initialization
-
-type Claims struct {
-	UserID string `json:"user_id"`
-	jwt.StandardClaims
+type JWTService interface {
+	GenerateToken(userID string) (string, error)
+	ValidateToken(token string) (*jwt.Token, error)
 }
 
-// InitJWT initializes the JWT secret
-func InitJWT(secret string) {
-	jwtSecret = []byte(secret)
+type jwtService struct {
+	secretKey string
+	issuer    string
 }
 
-// GenerateToken generates a JWT token for a given user ID
-func GenerateToken(userID string) (string, error) {
-	if len(jwtSecret) == 0 {
-		return "", errors.New("JWT secret not initialized")
+func InitJWT(secret string) JWTService {
+	return &jwtService{
+		secretKey: secret,
+		issuer:    "book-exchange",
 	}
+}
 
-	expirationTime := time.Now().Add(24 * time.Hour) // Token valid for 24 hours
-	claims := &Claims{
-		UserID: userID,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-			IssuedAt:  time.Now().Unix(),
-			Issuer:    "your_app_name",
-		},
+func NewJWTService(secretKey, issuer string) JWTService {
+	return &jwtService{
+		secretKey: secretKey,
+		issuer:    issuer,
+	}
+}
+
+func (j *jwtService) GenerateToken(userID string) (string, error) {
+	claims := jwt.MapClaims{
+		"user_id": userID,
+		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+		"iat":     time.Now().Unix(),
+		"iss":     j.issuer,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtSecret)
+	return token.SignedString([]byte(j.secretKey))
 }
 
-// ParseToken parses a JWT and returns the user ID if valid
-func ParseToken(tokenString string) (string, error) {
-	if len(jwtSecret) == 0 {
-		return "", errors.New("JWT secret not initialized")
-	}
-
-	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
+func (j *jwtService) ValidateToken(tokenStr string) (*jwt.Token, error) {
+	return jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		// Ensure the signing method is HMAC
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, jwt.ErrSignatureInvalid
+		}
+		return []byte(j.secretKey), nil
 	})
-	if err != nil || !token.Valid {
-		return "", errors.New("invalid or expired token")
-	}
-	return claims.UserID, nil
+}
+
+// Utility functions for hashing
+func HashPassword(password string) (string, error) {
+	bytes, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	return string(bytes), err
+}
+
+func CheckPasswordHash(password, hash string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 }

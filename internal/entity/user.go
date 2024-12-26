@@ -3,29 +3,24 @@ package entity
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type User struct {
-	ID           uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey" json:"id"`
-	Username     string    `gorm:"type:varchar(50);unique;not null" json:"username"`
-	Email        string    `gorm:"type:varchar(100);unique;not null" json:"email"`
-	PasswordHash string    `gorm:"type:varchar(255);not null" json:"-"`
-	CreatedAt    time.Time `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt    time.Time `gorm:"autoUpdateTime" json:"updated_at"`
-
-	// Relationships
-	Books           []Book     `gorm:"foreignKey:UserID" json:"books,omitempty"`
-	Posts           []Post     `gorm:"foreignKey:UserID" json:"posts,omitempty"`
-	Exchanges       []Exchange `gorm:"foreignKey:OwnerID" json:"exchanges,omitempty"`
-	Messages        []Message  `gorm:"foreignKey:SenderID" json:"messages,omitempty"`
-	RatingsGiven    []Rating   `gorm:"foreignKey:RaterID" json:"ratings_given,omitempty"`
-	RatingsReceived []Rating   `gorm:"foreignKey:RateeID" json:"ratings_received,omitempty"`
+	UserID    int        `gorm:"primaryKey;column:user_id" json:"id"`
+	Username  string     `gorm:"unique;not null;size:50" json:"username"`
+	Email     string     `gorm:"unique;not null;size:255" json:"email"`
+	Password  string     `gorm:"column:password_hash;not null;size:255" json:"-"`
+	FullName  string     `gorm:"size:100" json:"full_name,omitempty"`
+	Location  string     `gorm:"size:255" json:"location,omitempty"`
+	Bio       string     `gorm:"type:text" json:"bio,omitempty"`
+	Rating    float32    `gorm:"type:decimal(3,2);default:0.00;check:rating >= 0 AND rating <= 5" json:"rating,omitempty"`
+	CreatedAt time.Time  `gorm:"autoCreateTime" json:"created_at"`
+	LastLogin *time.Time `json:"last_login,omitempty"`
+	IsActive  bool       `gorm:"default:true" json:"is_active"`
 }
 
 type UserCredentials struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Email    string `json:"email"`
+	Email    string `json:"email,omitempty"`
 }

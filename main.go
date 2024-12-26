@@ -25,7 +25,10 @@ func main() {
 	// Load config
 	cfg := config.LoadConfig()
 
-	utils.InitJWT(cfg.JWTSecret)
+	jwtService := utils.InitJWT(cfg.JWTSecret)
+	jwtKey := []byte(cfg.JWTSecret)
+
+	log.Print(jwtService)
 
 	// Optionally, log if JWT secret is set correctly
 	if len(cfg.JWTSecret) == 0 {
@@ -44,13 +47,13 @@ func main() {
 
 	// Repositories and Use Cases
 	userRepo := repository.NewUserRepository(db)
-	userUseCase := usecase.NewUserUseCase(userRepo)
+	userUseCase := usecase.NewUserUseCase(userRepo, jwtService)
 
 	// Handlers
 	userHandler := handlers.NewUserHandler(userUseCase)
 
 	// Initialize Router
-	newRouter := router.NewRouter(userHandler)
+	newRouter := router.NewRouter(userHandler, jwtKey)
 
 	// Start Server with dynamic port from config
 	port := cfg.ServerPort
